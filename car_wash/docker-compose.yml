@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  car-wash:
+    build: .
+    image: car-wash:latest
+    container_name: car_wash_container
+
+    # SECURITY: Enforce read-only root filesystem
+    # This ensures that an attacker cannot modify the system files or application code
+    # inside the running container.
+    read_only: true
+
+    # Run as non-root user (matches Dockerfile UID)
+    user: "1000:1000"
+
+    volumes:
+      # Map host directories to container directories
+      # NOTE: Ensure the ./output directory on the host is writable by UID 1000
+      - ./input:/data/input
+      - ./output:/data/output
+
+    # When read_only is true, we need to provide writable temporary storage
+    # for processes that expect to write to /tmp or /run
+    tmpfs:
+      - /tmp
+      - /run
+
+    environment:
+      - INPUT_DIR=/data/input
+      - OUTPUT_DIR=/data/output
+
+    # Restart policy
+    restart: unless-stopped
