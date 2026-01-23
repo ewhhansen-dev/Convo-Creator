@@ -1,75 +1,68 @@
-# Immutable Car Wash Container
+# Immutable "Car Wash" Container
 
-This directory contains a secure, immutable Docker setup for a file sanitation "car wash" script.
+This directory contains a **hardened, lead-lined Docker setup** for file sanitation. It implements a "Digital Clean Room" approach, ensuring that the sanitation process occurs in a strictly isolated, ephemeral, and immutable environment.
 
-## Structure
+## Security Architecture
 
-*   `car_wash.py`: The application script (simulates file sanitation).
-*   `Dockerfile`: Builds the immutable container image.
-*   `docker-compose.yml`: Orchestrates the service with read-only root filesystem and volume mounts.
+This setup draws inspiration from high-security projects like *entrusted*, *AzureTRE*, and *dangerzone*.
 
-## Running the Car Wash
+### 1. The "Air Gap" (Network Isolation)
+*   **Implementation**: `network_mode: none`
+*   **Effect**: The container has **zero** network access. It cannot download malware, connect to a Command & Control (C2) server, or exfiltrate data. It is a pure function: `Input -> [Sanitization] -> Output`.
 
-1.  Create input and output directories on your host:
+### 2. Immutable Infrastructure
+*   **Implementation**: `read_only: true` (Docker Compose) and root-owned application code (Dockerfile).
+*   **Effect**: The root filesystem cannot be modified. Even if an attacker gains code execution, they cannot install tools, modify the application, or persist malware in the system layers.
+
+### 3. Least Privilege & Containment
+*   **Implementation**:
+    *   `cap_drop: [ALL]`: All Linux capabilities (like `NET_ADMIN`, `SYS_ADMIN`) are stripped.
+    *   `security_opt: [no-new-privileges:true]`: Prevents privilege escalation (e.g., via setuid binaries).
+    *   **Resource Limits**: CPU (0.5 cores) and Memory (512MB) are capped to prevent DoS attacks.
+    *   **Non-Root User**: Runs as UID 1000.
+
+### 4. The "Airlock" Data Flow
+*   **Input**: Mounted as **Read-Only** (`:ro`). The container cannot tamper with the source evidence.
+*   **Output**: Mounted as Read-Write. Ideally, a separate process on the host should move files out of `output` to a clean destination, verifying that the container has finished.
+
+## Usage
+
+1.  **Prepare the Host**:
     ```bash
-    mkdir input output
-    # Ensure the output directory is writable by the container user (UID 1000)
-    # This is important because the container cannot change permissions of mounted volumes
-    sudo chown 1000:1000 output
+    mkdir -p input output
+    # Ensure the output directory is writable by UID 1000
+    chown 1000:1000 output
     ```
-2.  Add files to `input/`.
-3.  Start the container:
+
+2.  **Run the Clean Room**:
     ```bash
     docker-compose up -d --build
     ```
-4.  Check `output/` for processed files.
-5.  View logs:
-    ```bash
-    docker-compose logs -f
-    ```
 
-## Immutable Design
+3.  **Process**:
+    *   Drop files into `./input`.
+    *   The sanitized files appear in `./output`.
 
-*   **Read-Only Root Filesystem**: The container runs with `read_only: true`, preventing any modification to system files or application code at runtime.
-*   **Non-Root User**: Runs as a dedicated `appuser` (UID 1000).
-*   **Ephemeral State**: All writable data is confined to explicit volumes (`/data/output`) or memory-backed tmpfs (`/tmp`), meaning no state persists in the container layer itself.
+## VRAM / GPU Support (Advanced)
 
-## GPU / VRAM Usage
+While the default setup is "lead-lined" (software only), some CDR tools (like *ArielCyber/ICDR*) may require GPU acceleration.
 
-You asked about using VRAM (GPU access) in Docker containers. Yes, this is possible and commonly used for tasks like AI/ML (e.g., using Whisper for dictation).
+**Warning**: Enabling GPU access punches a hole in the isolation (device access).
 
-### Prerequisites
+To enable GPU support with the NVIDIA Container Toolkit:
 
-1.  **NVIDIA Drivers**: Installed on the host machine.
-2.  **NVIDIA Container Toolkit**: Must be installed and configured.
-    *   Installation guide: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
-
-### Enabling GPU in Docker
-
-**Using Docker CLI:**
-Add the `--gpus` flag:
-```bash
-docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
-```
-
-**Using Docker Compose:**
-You need to modify `docker-compose.yml` to request GPU resources.
-
-Example modification for `car-wash/docker-compose.yml`:
-
-```yaml
-services:
-  car-wash:
-    # ... other config ...
+1.  **Modify `docker-compose.yml`**:
+    *   You must *remove* `cap_drop: [ALL]` or explicitly add back capabilities required by the NVIDIA driver (often `utility`, `compute`).
+    *   Add the device reservation:
+    ```yaml
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: 1 # or 'all'
+              count: 1
               capabilities: [gpu]
-```
+    ```
 
-**Important Notes for GPU:**
-1.  **Base Image**: You will likely need to switch from `python:3.9-slim` to an NVIDIA CUDA base image (e.g., `nvidia/cuda:11.8.0-base-ubuntu22.04`) or a framework-specific image (e.g., `pytorch/pytorch`) to have the necessary drivers and libraries inside the container.
-2.  **Compatibility**: Ensure the CUDA version in the container matches or is compatible with the host driver version.
+2.  **Base Image**:
+    *   Switch `FROM python:3.11-alpine` to an NVIDIA-supported image (e.g., `nvidia/cuda:11.8.0-runtime-ubuntu22.04`). *Note: Alpine does not officially support the proprietary NVIDIA driver stack well; Ubuntu/Debian is recommended for GPU workloads.*
