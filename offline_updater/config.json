@@ -1,0 +1,12 @@
+{
+    "apt_packages": [
+        "curl",
+        "git",
+        "htop"
+    ],
+    "pip_packages": [
+        "requests",
+        "numpy"
+    ],
+    "download_dir": "updates"
+}
