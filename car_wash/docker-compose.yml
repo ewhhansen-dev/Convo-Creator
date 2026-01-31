@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  car-wash:
+    build: .
+    image: car-wash:hardened
+    container_name: car_wash_secure
+
+    # --- SECURITY HARDENING ---
+
+    # 1. NETWORK ISOLATION (Air Gap)
+    # The container has no network interface other than loopback.
+    # Prevents data exfiltration and C2 communication.
+    network_mode: none
+
+    # 2. IMMUTABLE FILESYSTEM
+    # Root filesystem is read-only.
+    # Prevents runtime modification of executables or configuration.
+    read_only: true
+
+    # 3. CAPABILITY DROPPING
+    # Drop all Linux capabilities (root privileges).
+    # The container cannot perform privileged system operations.
+    cap_drop:
+      - ALL
+
+    # 4. PRIVILEGE ESCALATION PREVENTION
+    # Prevents processes from gaining more privileges than they started with (e.g., via setuid binaries).
+    security_opt:
+      - no-new-privileges:true
+
+    # 5. RESOURCE LIMITS
+    # Containment: Prevent DoS attacks by limiting CPU and Memory.
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          memory: 128M
+
+    # 6. NON-ROOT USER
+    # Run as the unprivileged user created in the Dockerfile.
+    user: "1000:1000"
+
+    # --- VOLUMES & CONFIG ---
+
+    volumes:
+      # "Airlock" pattern:
+      # Input is Read-Only to the container
+      - ./input:/data/input:ro
+      # Output is Write-Only (conceptually), but we need RW to write sanitized files
+      - ./output:/data/output:rw
+
+    # Writable temporary storage for the application runtime (since root is RO)
+    tmpfs:
+      - /tmp
+      - /run
+
+    environment:
+      - INPUT_DIR=/data/input
+      - OUTPUT_DIR=/data/output
+
+    restart: unless-stopped
