@@ -1,0 +1,16 @@
+[project]
+name = "the-dictator"
+version = "0.2.0"
+description = "Local dictation app with Browser Frontend and Python Backend."
+requires-python = ">=3.12"
+dependencies = [
+    "faster-whisper>=1.0.0",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "python-multipart>=0.0.9",
+    "aiofiles>=23.2.1",
+    "numpy>=1.26.0"
+]
+
+[tool.setuptools]
+packages = ["backend"]
