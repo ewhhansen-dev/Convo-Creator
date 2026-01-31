@@ -1,35 +1,54 @@
-# Convo-Creator (Dictation Station)
+# The Dictator
 
-A lightweight, robust, and "lead-lined" dictation application designed for ChromeOS (Crostini) but portable to any Linux environment.
+Local-first dictation that behaves like a tool — not a platform.
 
-## Features
+**Goal (MVP):** hit a MIDI pad → talk → stop → get clean text → copy/paste anywhere → every take appends to a running session .md.
 
-- **Local Transcription:** Uses `faster-whisper` for high-speed, offline-capable speech-to-text.
-- **MIDI Trigger:** Supports 16-key MIDI drum pads to trigger recording, start AI workflows, or insert macros.
-- **Session Logging:** Automatically appends all dictations to a daily Markdown (`.md`) journal.
-- **Clipboard Integration:** Instantly copies transcription to clipboard for pasting into any app.
-- **Modern UI:** Built with Flet for a clean, responsive interface.
-- **AI Ready:** Designed to easily plug in local LLMs or external APIs for text refinement.
+## Architecture
 
-## Requirements
+**Browser + Backend Split**
 
-- Linux (Ubuntu 24.04+ recommended) or ChromeOS Crostini.
-- Python 3.12+
-- `ffmpeg` installed on the system.
+ChromeOS + Crostini is a sandbox with two pain points:
+1. USB MIDI into the Linux container is unreliable.
+2. Cross-app keystroke injection is blocked.
+
+**Solution:**
+- **Frontend (Chrome):** Web MIDI API (Pads) + MediaRecorder (Audio) -> Sends WAV to Backend.
+- **Backend (Python/Crostini):** FastAPI server -> `faster-whisper` -> Logs to Markdown -> Returns text.
+
+## Directory Structure
+
+```
+The-Dictator/
+├── backend/             # Python API (FastAPI)
+│   ├── main.py          # Entry point
+│   ├── api/             # Routes
+│   ├── engine/          # Transcription logic
+│   └── output/          # Session logging
+├── frontend/            # HTML/JS Client
+│   ├── index.html
+│   └── app.js           # Web MIDI & Fetch logic
+├── scripts/             # Setup utilities
+└── transcripts/         # Session logs
+```
 
 ## Quick Start
 
-1. **Setup:**
+1. **Setup Backend:**
    ```bash
    ./scripts/setup.sh
    source .venv/bin/activate
    ```
 
-2. **Run:**
+2. **Run Backend:**
    ```bash
-   python main.py
+   uvicorn backend.main:app --reload
    ```
 
-## Architecture
+3. **Open Frontend:**
+   Open `frontend/index.html` in Chrome.
+   *(Note: For microphone access, you may need to serve it via a local server, e.g., `python -m http.server` in the frontend dir, or configure Chrome to allow file:// access to mic)*
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed design info.
+## MIDI Mapping (Default)
+- **Pad 1 (Note 36):** Toggle Record
+- **Pad 2 (Note 37):** Copy to Clipboard

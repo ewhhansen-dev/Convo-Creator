@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dictator</title>
+    <style>
+        body { font-family: monospace; background: #222; color: #eee; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        #status { color: #888; margin-bottom: 10px; }
+        #transcript { width: 100%; height: 300px; background: #333; color: #fff; border: 1px solid #555; padding: 10px; font-size: 16px; }
+        .controls { margin-top: 10px; display: flex; gap: 10px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; }
+        #btnRecord { background: #007bff; color: white; }
+        #btnRecord.recording { background: #dc3545; }
+        #btnCopy { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>The Dictator</h1>
+        <div id="status">Ready (MIDI: Waiting...)</div>
+        <textarea id="transcript" placeholder="Transcription will appear here..."></textarea>
+
+        <div class="controls">
+            <button id="btnRecord">Record (Pad 1)</button>
+            <button id="btnCopy">Copy (Pad 2)</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

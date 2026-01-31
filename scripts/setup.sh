@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
 
-echo ">>> Setting up Convo-Creator Environment..."
+echo ">>> Setting up The-Dictator Environment..."
 
-# 1. System Dependencies (Debian/Ubuntu/Crostini)
-echo ">>> Installing System Dependencies (ffmpeg, portaudio)..."
+# 1. System Dependencies
+# ffmpeg is needed for faster-whisper/audio processing
+echo ">>> Installing System Dependencies (ffmpeg)..."
 sudo apt-get update
-sudo apt-get install -y ffmpeg libportaudio2 libasound2-dev python3-venv librtmidi-dev
+sudo apt-get install -y ffmpeg
 
 # 2. Python Virtual Environment
 if [ ! -d ".venv" ]; then

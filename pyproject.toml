@@ -1,18 +1,16 @@
 [project]
-name = "convo-creator"
-version = "0.1.0"
-description = "A local dictation and AI interaction tool."
+name = "the-dictator"
+version = "0.2.0"
+description = "Local dictation app with Browser Frontend and Python Backend."
 requires-python = ">=3.12"
 dependencies = [
     "faster-whisper>=1.0.0",
-    "sounddevice>=0.4.6",
-    "soundfile>=0.12.1",
-    "numpy>=1.26.0",
-    "mido>=1.3.0",
-    "python-rtmidi>=1.5.8",
-    "flet>=0.21.0",
-    "pyperclip>=1.8.2"
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "python-multipart>=0.0.9",
+    "aiofiles>=23.2.1",
+    "numpy>=1.26.0"
 ]
 
 [tool.setuptools]
-packages = ["src"]
+packages = ["backend"]
