@@ -1,0 +1,7 @@
+faster-whisper
+sounddevice
+soundfile
+numpy
+PyQt6
+pyperclip
+PyYAML
