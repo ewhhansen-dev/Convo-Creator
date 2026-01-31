@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api import routes
+from backend.config.loader import load_settings
 import os
 
 app = FastAPI(title="The Dictator API")
 
-# Allow CORS for frontend dev (usually port 5500 or 8000)
+# Allow CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,5 +20,11 @@ app.include_router(routes.router)
 @app.on_event("startup")
 async def startup_event():
     print(">>> Backend Starting...")
+
+    # Load Config
+    config = load_settings()
+    print(f">>> Loaded Config: Host={config.host}, Port={config.port}")
+    print(f">>> Whisper Settings: Model={config.whisper.model_size}, Device={config.whisper.device}")
+
     # Ensure log directory exists
     os.makedirs("transcripts", exist_ok=True)
