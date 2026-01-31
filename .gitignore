@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments
+.env
+.venv
+venv/
+
+# IDEs
+.idea/
+.vscode/
+.project
+
+# Application Data
+data/*.md
+*.wav
+temp_recording.wav
+
+# Local Config override
+config/local_settings.yaml
+
+# Pytest
+.pytest_cache/

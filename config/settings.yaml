@@ -1,0 +1,20 @@
+app:
+  name: "Convo-Creator"
+  version: "0.1.0"
+
+audio:
+  sample_rate: 16000
+  channels: 1
+  temp_filename: "temp_recording.wav"
+
+transcription:
+  model_size: "base" # Options: tiny, base, small, medium, large-v2
+  device: "auto"     # Options: cpu, cuda, auto
+  compute_type: "int8" # Options: int8, float16, float32
+
+storage:
+  base_path: "data"
+  filename_format: "%Y-%m-%d.md"
+
+ui:
+  theme: "Dark"
