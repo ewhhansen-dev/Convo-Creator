@@ -1,0 +1,12 @@
+[[buttons]]
+note = 36
+action = "toggle_recording"
+
+[[buttons]]
+note = 37
+action = "copy_clipboard"
+
+[[buttons]]
+note = 38
+action = "ai_refine"
+payload = "Fix grammar and spelling"
