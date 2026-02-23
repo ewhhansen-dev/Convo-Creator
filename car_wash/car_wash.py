@@ -16,6 +16,12 @@ def process_files(input_dir, output_dir):
 
     print(f"Scanning {input_dir} for files...")
     try:
+        # Optimization: Read output directory once into a set to avoid repeated syscalls
+        try:
+            processed_files = set(os.listdir(output_dir))
+        except OSError:
+            processed_files = set()
+
         with os.scandir(input_dir) as it:
             for entry in it:
                 filename = entry.name
@@ -27,7 +33,7 @@ def process_files(input_dir, output_dir):
                 output_path = os.path.join(output_dir, filename)
 
                 # Only process if output doesn't exist (avoid re-processing loops for this demo)
-                if os.path.exists(output_path):
+                if filename in processed_files:
                     continue
 
                 print(f"Processing {filename}...")
